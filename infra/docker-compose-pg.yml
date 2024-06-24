@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  db-test:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: magicWordList
+    ports:
+      - "15433:5432"
