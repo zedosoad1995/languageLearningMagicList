@@ -42,12 +42,6 @@ async function main() {
         relevance: 2,
       },
       {
-        original: "Mutter (f)",
-        translation: "mother",
-        knowledge: 5,
-        relevance: 5,
-      },
-      {
         original: "Augenbraue (f)",
         translation: "eyebrow",
         knowledge: 3,

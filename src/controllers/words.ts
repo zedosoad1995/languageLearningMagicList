@@ -4,6 +4,30 @@ import { WordModel } from "@/models/word";
 import { Prisma } from "@prisma/client";
 import { Request, Response } from "express";
 
+type SortableFields = "knowledge" | "relevance" | "original" | "translation";
+
+export const getWords = async (req: Request, res: Response) => {
+  const { sortBy, order } = req.query;
+  const tranformedOrder = order === "desc" ? "desc" : "asc";
+
+  const orderQuery: Prisma.WordOrderByWithRelationInput = {};
+
+  if (
+    typeof sortBy === "string" &&
+    ["knowledge", "relevance", "original", "translation"].includes(sortBy)
+  ) {
+    orderQuery[sortBy as SortableFields] = tranformedOrder;
+  } else {
+    orderQuery.original = tranformedOrder;
+  }
+
+  const words = await WordModel.findMany({
+    orderBy: orderQuery,
+  });
+
+  res.status(201).send({ words, total: words.length });
+};
+
 export const pickDailyWords = async (req: Request, res: Response) => {
   const settings = await SettingsModel.findFirst();
 
