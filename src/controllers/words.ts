@@ -140,3 +140,27 @@ export const deleteWord = async (req: Request, res: Response) => {
 
   res.sendStatus(204);
 };
+
+export const startTraining = async (req: Request, res: Response) => {
+  const settings = await SettingsModel.findFirst();
+  if (!settings) {
+    return res.status(500).send({ message: "No settings" });
+  }
+
+  await SettingsModel.update({
+    where: {
+      id: settings.id,
+    },
+    data: {
+      training_num_tries: 0,
+    },
+  });
+
+  await WordModel.updateMany({
+    data: {
+      training_try_num_seen: 0
+    }
+  })
+
+  res.sendStatus(204);
+};
