@@ -5,6 +5,7 @@ import {
   editWord,
   getWords,
   deleteWord,
+  getWord,
 } from "@/controllers/words";
 import { validateForm } from "@/midlewares/validateForm";
 import { createWordSchema } from "@/schemas/word/createWord";
@@ -13,6 +14,7 @@ import { editWordSchema } from "@/schemas/word/editWord";
 const router = Router();
 
 router.get("/", getWords);
+router.get("/:wordId", getWord);
 router.put("/pick-daily", pickDailyWords);
 router.post("/", validateForm(createWordSchema), createWord);
 router.patch("/:wordId", validateForm(editWordSchema), editWord);

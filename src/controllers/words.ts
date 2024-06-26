@@ -28,6 +28,18 @@ export const getWords = async (req: Request, res: Response) => {
   res.status(201).send({ words, total: words.length });
 };
 
+export const getWord = async (req: Request, res: Response) => {
+  const wordId = req.params.wordId;
+
+  const word = await WordModel.findUnique({ where: { id: wordId } });
+
+  if (!word) {
+    return res.status(404).send({ message: "Word not found" });
+  }
+
+  res.status(200).send(word);
+};
+
 export const pickDailyWords = async (req: Request, res: Response) => {
   const settings = await SettingsModel.findFirst();
 
