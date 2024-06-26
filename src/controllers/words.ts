@@ -110,3 +110,21 @@ export const editWord = async (req: Request, res: Response) => {
 
   res.status(200).send(updatedWord);
 };
+
+export const deleteWord = async (req: Request, res: Response) => {
+  const wordId = req.params.wordId;
+
+  const word = await WordModel.findUnique({ where: { id: wordId } });
+
+  if (!word) {
+    return res.status(404).send({ message: "Word not found" });
+  }
+
+  await WordModel.delete({
+    where: {
+      id: wordId,
+    },
+  });
+
+  res.sendStatus(204);
+};

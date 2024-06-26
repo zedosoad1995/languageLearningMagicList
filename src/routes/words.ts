@@ -4,6 +4,7 @@ import {
   createWord,
   editWord,
   getWords,
+  deleteWord,
 } from "@/controllers/words";
 import { validateForm } from "@/midlewares/validateForm";
 import { createWordSchema } from "@/schemas/word/createWord";
@@ -15,5 +16,6 @@ router.get("/", getWords);
 router.put("/pick-daily", pickDailyWords);
 router.post("/", validateForm(createWordSchema), createWord);
 router.patch("/:wordId", validateForm(editWordSchema), editWord);
+router.delete("/:wordId", deleteWord);
 
 export default router;
