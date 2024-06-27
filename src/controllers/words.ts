@@ -25,7 +25,7 @@ export const getWords = async (req: Request, res: Response) => {
     orderBy: orderQuery,
   });
 
-  res.status(201).send({ words, total: words.length });
+  res.status(200).send({ words, total: words.length });
 };
 
 export const getWord = async (req: Request, res: Response) => {
@@ -118,6 +118,27 @@ export const editWord = async (req: Request, res: Response) => {
       id: wordId,
     },
     data: req.body,
+  });
+
+  res.status(200).send(updatedWord);
+};
+
+export const markWordAsSeen = async (req: Request, res: Response) => {
+  const wordId = req.params.wordId;
+
+  const word = await WordModel.findUnique({ where: { id: wordId } });
+
+  if (!word) {
+    return res.status(404).send({ message: "Word not found" });
+  }
+
+  const updatedWord = await WordModel.update({
+    where: {
+      id: wordId,
+    },
+    data: {
+      last_seen: new Date(),
+    },
   });
 
   res.status(200).send(updatedWord);

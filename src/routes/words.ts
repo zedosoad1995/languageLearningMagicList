@@ -8,6 +8,7 @@ import {
   getWord,
   startTraining,
   pickNextWordTraining,
+  markWordAsSeen,
 } from "@/controllers/words";
 import { validateForm } from "@/midlewares/validateForm";
 import { createWordSchema } from "@/schemas/word/createWord";
@@ -22,6 +23,7 @@ router.put("/training/start", startTraining);
 router.post("/training/next-word", pickNextWordTraining);
 router.post("/", validateForm(createWordSchema), createWord);
 router.patch("/:wordId", validateForm(editWordSchema), editWord);
+router.patch("/:wordId/seen", markWordAsSeen);
 router.delete("/:wordId", deleteWord);
 
 export default router;
