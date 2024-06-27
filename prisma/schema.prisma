@@ -15,25 +15,25 @@ model User {
 }
 
 model Settings {
-  id                 String    @id @default(uuid())
-  words_per_day      Int
-  words_picked_at    DateTime?
-  training_num_tries Int       @default(0)
-  user               User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  user_id            String    @unique
-  created_at         DateTime  @default(now())
-  updated_at         DateTime  @updatedAt
+  id               String    @id @default(uuid())
+  words_per_day    Int
+  words_picked_at  DateTime?
+  training_try_num Int       @default(0)
+  user             User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id          String    @unique
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
 }
 
 model Word {
-  id                    String   @id @default(uuid())
-  original              String
-  translation           String
-  relevance             Int
-  knowledge             Int
-  is_picked             Boolean  @default(false)
-  last_seen             DateTime @default(now())
-  training_try_num_seen Int      @default(0)
-  created_at            DateTime @default(now())
-  updated_at            DateTime @updatedAt
+  id                String   @id @default(uuid())
+  original          String
+  translation       String
+  relevance         Int
+  knowledge         Int
+  is_picked         Boolean  @default(false)
+  last_seen         DateTime @default(now())
+  last_training_try Int      @default(-1)
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
 }

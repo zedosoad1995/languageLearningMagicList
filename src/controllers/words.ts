@@ -152,15 +152,50 @@ export const startTraining = async (req: Request, res: Response) => {
       id: settings.id,
     },
     data: {
-      training_num_tries: 0,
+      training_try_num: 0,
     },
   });
 
   await WordModel.updateMany({
     data: {
-      training_try_num_seen: 0
-    }
-  })
+      last_training_try: -1,
+    },
+  });
 
   res.sendStatus(204);
+};
+
+export const pickNextWordTraining = async (req: Request, res: Response) => {
+  const settings = await SettingsModel.findFirst();
+  if (!settings) {
+    return res.status(500).send({ message: "No settings" });
+  }
+
+  await SettingsModel.update({
+    where: {
+      id: settings.id,
+    },
+    data: {
+      training_try_num: settings.training_try_num + 1,
+    },
+  });
+
+  const pickedWord = await WordModel.pickRandomWordTraining(
+    settings.training_try_num
+  );
+  if (!pickedWord) {
+    return res.status(500).send({ message: "Could not pick word" });
+  }
+
+  await WordModel.update({
+    data: {
+      last_training_try: settings.training_try_num,
+      last_seen: new Date(),
+    },
+    where: {
+      id: pickedWord.id,
+    },
+  });
+
+  res.status(200).send(pickedWord);
 };
