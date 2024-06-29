@@ -113,6 +113,7 @@ export const createWord = async (req: Request, res: Response) => {
 
 export const editWord = async (req: Request, res: Response) => {
   const wordId = req.params.wordId;
+  const { isSeen, ...body } = req.body;
 
   const word = await WordModel.findUnique({ where: { id: wordId } });
 
@@ -120,32 +121,16 @@ export const editWord = async (req: Request, res: Response) => {
     return res.status(404).send({ message: "Word not found" });
   }
 
-  const updatedWord = await WordModel.update({
-    where: {
-      id: wordId,
-    },
-    data: req.body,
-  });
-
-  res.status(200).send(updatedWord);
-};
-
-export const markWordAsSeen = async (req: Request, res: Response) => {
-  const wordId = req.params.wordId;
-
-  const word = await WordModel.findUnique({ where: { id: wordId } });
-
-  if (!word) {
-    return res.status(404).send({ message: "Word not found" });
+  const data = body;
+  if (isSeen) {
+    data.last_seen = new Date();
   }
 
   const updatedWord = await WordModel.update({
     where: {
       id: wordId,
     },
-    data: {
-      last_seen: new Date(),
-    },
+    data,
   });
 
   res.status(200).send(updatedWord);
