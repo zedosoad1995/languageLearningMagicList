@@ -87,10 +87,10 @@ export const pickDailyWords = async (req: Request, res: Response) => {
   }
 
   const seenWords = pickedWords.filter(
-    ({ last_seen }) => daysDiff(last_seen, now) <= 0
+    ({ last_seen }) => last_seen && daysDiff(last_seen, now) <= 0
   );
   const unseenWords = pickedWords.filter(
-    ({ last_seen }) => daysDiff(last_seen, now) > 0
+    ({ last_seen }) => !last_seen || daysDiff(last_seen, now) > 0
   );
 
   res.status(200).send({ seenWords, unseenWords });

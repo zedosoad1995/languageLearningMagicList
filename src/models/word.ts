@@ -12,14 +12,14 @@ const calculateScoreTraining = (
   }: {
     relevance: number;
     knowledge: number;
-    last_seen: Date;
+    last_seen: Date | null;
     last_training_try: number;
   },
   trainingTryNum: number
 ) => {
   const baseScore = (6 - knowledge) * relevance;
   const now = new Date();
-  const daysSinceLastSeen = daysDiff(last_seen, now);
+  const daysSinceLastSeen = last_seen ? daysDiff(last_seen, now) : 0;
   const numTriesSinceLast = Math.max(trainingTryNum - wordLastTrainingTry, 1);
 
   const c = Math.max(numTriesSinceLast, daysSinceLastSeen + 1);
@@ -34,11 +34,11 @@ const calculateScore = ({
 }: {
   relevance: number;
   knowledge: number;
-  last_seen: Date;
+  last_seen: Date | null;
 }) => {
   const baseScore = (6 - knowledge) * relevance;
   const now = new Date();
-  const daysSinceLastSeen = daysDiff(last_seen, now);
+  const daysSinceLastSeen = last_seen ? daysDiff(last_seen, now) : 0;
 
   return baseScore * (daysSinceLastSeen + 1);
 };
