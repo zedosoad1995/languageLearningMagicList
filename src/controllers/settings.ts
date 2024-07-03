@@ -1,7 +1,4 @@
-import { daysDiff } from "@/helpers/date";
 import { SettingsModel } from "@/models/settings";
-import { WordModel } from "@/models/word";
-import { Prisma } from "@prisma/client";
 import { Request, Response } from "express";
 
 export const getSettings = async (req: Request, res: Response) => {

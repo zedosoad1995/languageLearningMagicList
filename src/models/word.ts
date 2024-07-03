@@ -44,7 +44,7 @@ const calculateScore = ({
 };
 
 const pickRandomWordsByScore = async (numWords: number) => {
-  const allWords = await prisma.word.findMany();
+  const allWords = await prisma.word.findMany({ where: { is_learned: false } });
   const scores = allWords.map((word) => calculateScore(word));
 
   const pickedWords: Prisma.PromiseReturnType<typeof prisma.word.findMany> = [];
@@ -66,7 +66,7 @@ const pickRandomWordsByScore = async (numWords: number) => {
 };
 
 const pickRandomWordTraining = async (trainingTryNum: number) => {
-  const allWords = await prisma.word.findMany();
+  const allWords = await prisma.word.findMany({ where: { is_learned: false } });
   const scores = allWords.map((word) =>
     calculateScoreTraining(word, trainingTryNum)
   );

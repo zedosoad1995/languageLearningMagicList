@@ -1,4 +1,5 @@
 import { daysDiff } from "@/helpers/date";
+import { parseBoolean } from "@/helpers/query";
 import { SettingsModel } from "@/models/settings";
 import { WordModel } from "@/models/word";
 import { Prisma } from "@prisma/client";
@@ -9,6 +10,7 @@ type SortableFields = "knowledge" | "relevance" | "original" | "translation";
 export const getWords = async (req: Request, res: Response) => {
   const { sortBy, order } = req.query;
   const tranformedOrder = order === "desc" ? "desc" : "asc";
+  const isLearned = parseBoolean(req.query.isLearned as string | undefined);
 
   const orderQuery: Prisma.WordOrderByWithRelationInput = {};
 
@@ -21,7 +23,13 @@ export const getWords = async (req: Request, res: Response) => {
     orderQuery.original = tranformedOrder;
   }
 
+  const whereQuery: Prisma.WordWhereInput = {};
+  if (typeof isLearned === "boolean") {
+    whereQuery.is_learned = isLearned;
+  }
+
   const words = await WordModel.findMany({
+    where: whereQuery,
     orderBy: orderQuery,
   });
 
@@ -50,10 +58,10 @@ export const pickDailyWords = async (req: Request, res: Response) => {
   let pickedWords: Prisma.PromiseReturnType<typeof WordModel.findMany> = [];
 
   const now = new Date();
-  const wordsPickedToday =
+  const wereWordsPickedToday =
     settings.words_picked_at && daysDiff(settings.words_picked_at, now) === 0;
 
-  if (wordsPickedToday) {
+  if (wereWordsPickedToday) {
     pickedWords = await WordModel.findMany({
       where: { is_picked: true },
       take: settings.words_per_day,
