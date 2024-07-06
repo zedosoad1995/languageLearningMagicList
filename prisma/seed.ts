@@ -6,6 +6,8 @@ async function main() {
   await prisma.user.deleteMany();
   await prisma.user.create({
     data: {
+      "email": "joaoaoaoj@gmail.com",
+      "password": "plplplplp",
       settings: {
         create: {
           words_per_day: 5,

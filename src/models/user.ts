@@ -1,3 +1,9 @@
-import prisma from "@/helpers/prisma"
+import prisma from "@/helpers/prisma";
+import { IUser } from "@/types/user";
+import { omit } from "lodash";
 
-export const UserModel = prisma.user;
+const dto = (user: IUser) => {
+  return omit(user, "password");
+};
+
+export const UserModel = { ...prisma.user, dto };

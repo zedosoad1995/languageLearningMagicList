@@ -12,16 +12,17 @@ import {
 import { validateForm } from "@/midlewares/validateForm";
 import { createWordSchema } from "@/schemas/word/createWord";
 import { editWordSchema } from "@/schemas/word/editWord";
+import { checkAuth } from "@/midlewares/checkAuth";
 
 const router = Router();
 
-router.get("/", getWords);
-router.get("/:wordId", getWord);
-router.put("/pick-daily", pickDailyWords);
-router.put("/training/start", startTraining);
-router.post("/training/next-word", pickNextWordTraining);
-router.post("/", validateForm(createWordSchema), createWord);
-router.patch("/:wordId", validateForm(editWordSchema), editWord);
-router.delete("/:wordId", deleteWord);
+router.get("/", checkAuth, getWords);
+router.get("/:wordId", checkAuth, getWord);
+router.put("/pick-daily", checkAuth, pickDailyWords);
+router.put("/training/start", checkAuth, startTraining);
+router.post("/training/next-word", checkAuth, pickNextWordTraining);
+router.post("/", checkAuth, validateForm(createWordSchema), createWord);
+router.patch("/:wordId", checkAuth, validateForm(editWordSchema), editWord);
+router.delete("/:wordId", checkAuth, deleteWord);
 
 export default router;

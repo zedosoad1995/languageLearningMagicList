@@ -9,6 +9,8 @@ datasource db {
 
 model User {
   id         String    @id @default(uuid())
+  email      String    @unique
+  password   String
   settings   Settings?
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
