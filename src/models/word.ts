@@ -43,8 +43,10 @@ const calculateScore = ({
   return baseScore * (daysSinceLastSeen + 1);
 };
 
-const pickRandomWordsByScore = async (numWords: number) => {
-  const allWords = await prisma.word.findMany({ where: { is_learned: false } });
+const pickRandomWordsByScore = async (numWords: number, userId: string) => {
+  const allWords = await prisma.word.findMany({
+    where: { is_learned: false, user_id: userId },
+  });
   const scores = allWords.map((word) => calculateScore(word));
 
   const pickedWords: Prisma.PromiseReturnType<typeof prisma.word.findMany> = [];
@@ -65,8 +67,13 @@ const pickRandomWordsByScore = async (numWords: number) => {
   return pickedWords;
 };
 
-const pickRandomWordTraining = async (trainingTryNum: number) => {
-  const allWords = await prisma.word.findMany({ where: { is_learned: false } });
+const pickRandomWordTraining = async (
+  trainingTryNum: number,
+  userId: string
+) => {
+  const allWords = await prisma.word.findMany({
+    where: { is_learned: false, user_id: userId },
+  });
   const scores = allWords.map((word) =>
     calculateScoreTraining(word, trainingTryNum)
   );

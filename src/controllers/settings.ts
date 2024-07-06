@@ -2,7 +2,13 @@ import { SettingsModel } from "@/models/settings";
 import { Request, Response } from "express";
 
 export const getSettings = async (req: Request, res: Response) => {
-  const settings = await SettingsModel.findFirst();
+  const loggedUser = req.loggedUser!;
+
+  const settings = await SettingsModel.findUnique({
+    where: {
+      user_id: loggedUser.id,
+    },
+  });
   if (!settings) {
     return res.status(500).send({ message: "No settings" });
   }
@@ -11,7 +17,13 @@ export const getSettings = async (req: Request, res: Response) => {
 };
 
 export const editSettings = async (req: Request, res: Response) => {
-  const settings = await SettingsModel.findFirst();
+  const loggedUser = req.loggedUser!;
+
+  const settings = await SettingsModel.findUnique({
+    where: {
+      user_id: loggedUser.id,
+    },
+  });
   if (!settings) {
     return res.status(500).send({ message: "No settings" });
   }

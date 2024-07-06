@@ -12,6 +12,7 @@ model User {
   email      String    @unique
   password   String
   settings   Settings?
+  words      Word[]
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
 }
@@ -37,6 +38,8 @@ model Word {
   is_learned        Boolean   @default(false)
   last_seen         DateTime?
   last_training_try Int       @default(-1)
+  user              User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id           String
   created_at        DateTime  @default(now())
   updated_at        DateTime  @updatedAt
 }

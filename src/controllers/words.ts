@@ -8,6 +8,8 @@ import { Request, Response } from "express";
 type SortableFields = "knowledge" | "relevance" | "original" | "translation";
 
 export const getWords = async (req: Request, res: Response) => {
+  const loggedUser = req.loggedUser!;
+
   const { sortBy, order } = req.query;
   const tranformedOrder = order === "desc" ? "desc" : "asc";
   const isLearned = parseBoolean(req.query.isLearned as string | undefined);
@@ -23,7 +25,7 @@ export const getWords = async (req: Request, res: Response) => {
     orderQuery.original = tranformedOrder;
   }
 
-  const whereQuery: Prisma.WordWhereInput = {};
+  const whereQuery: Prisma.WordWhereInput = { user_id: loggedUser.id };
   if (typeof isLearned === "boolean") {
     whereQuery.is_learned = isLearned;
   }
@@ -37,9 +39,12 @@ export const getWords = async (req: Request, res: Response) => {
 };
 
 export const getWord = async (req: Request, res: Response) => {
+  const loggedUser = req.loggedUser!;
   const wordId = req.params.wordId;
 
-  const word = await WordModel.findUnique({ where: { id: wordId } });
+  const word = await WordModel.findUnique({
+    where: { id: wordId, user_id: loggedUser.id },
+  });
 
   if (!word) {
     return res.status(404).send({ message: "Word not found" });
@@ -49,7 +54,13 @@ export const getWord = async (req: Request, res: Response) => {
 };
 
 export const pickDailyWords = async (req: Request, res: Response) => {
-  const settings = await SettingsModel.findFirst();
+  const loggedUser = req.loggedUser!;
+
+  const settings = await SettingsModel.findUnique({
+    where: {
+      user_id: loggedUser.id,
+    },
+  });
 
   if (!settings) {
     return res.status(500).send({ message: "No settings" });
@@ -63,12 +74,13 @@ export const pickDailyWords = async (req: Request, res: Response) => {
 
   if (wereWordsPickedToday) {
     pickedWords = await WordModel.findMany({
-      where: { is_picked: true },
+      where: { is_picked: true, user_id: loggedUser.id },
       take: settings.words_per_day,
     });
   } else {
     pickedWords = await WordModel.pickRandomWordsByScore(
-      settings.words_per_day
+      settings.words_per_day,
+      loggedUser.id
     );
 
     await SettingsModel.update({
@@ -77,6 +89,9 @@ export const pickDailyWords = async (req: Request, res: Response) => {
     });
 
     await WordModel.updateMany({
+      where: {
+        user_id: loggedUser.id,
+      },
       data: {
         is_picked: false,
       },
@@ -84,6 +99,7 @@ export const pickDailyWords = async (req: Request, res: Response) => {
 
     await WordModel.updateMany({
       where: {
+        user_id: loggedUser.id,
         id: {
           in: pickedWords.map(({ id }) => id),
         },
@@ -105,6 +121,8 @@ export const pickDailyWords = async (req: Request, res: Response) => {
 };
 
 export const createWord = async (req: Request, res: Response) => {
+  const loggedUser = req.loggedUser!;
+
   const { original, translation, knowledge, relevance } = req.body;
 
   const newWord = await WordModel.create({
@@ -113,6 +131,11 @@ export const createWord = async (req: Request, res: Response) => {
       translation,
       knowledge,
       relevance,
+      user: {
+        connect: {
+          id: loggedUser.id,
+        },
+      },
     },
   });
 
@@ -120,10 +143,14 @@ export const createWord = async (req: Request, res: Response) => {
 };
 
 export const editWord = async (req: Request, res: Response) => {
+  const loggedUser = req.loggedUser!;
+
   const wordId = req.params.wordId;
   const { isSeen, ...body } = req.body;
 
-  const word = await WordModel.findUnique({ where: { id: wordId } });
+  const word = await WordModel.findUnique({
+    where: { id: wordId, user_id: loggedUser.id },
+  });
 
   if (!word) {
     return res.status(404).send({ message: "Word not found" });
@@ -137,6 +164,7 @@ export const editWord = async (req: Request, res: Response) => {
   const updatedWord = await WordModel.update({
     where: {
       id: wordId,
+      user_id: loggedUser.id,
     },
     data,
   });
@@ -145,9 +173,12 @@ export const editWord = async (req: Request, res: Response) => {
 };
 
 export const deleteWord = async (req: Request, res: Response) => {
+  const loggedUser = req.loggedUser!;
   const wordId = req.params.wordId;
 
-  const word = await WordModel.findUnique({ where: { id: wordId } });
+  const word = await WordModel.findUnique({
+    where: { id: wordId, user_id: loggedUser.id },
+  });
 
   if (!word) {
     return res.status(404).send({ message: "Word not found" });
@@ -163,7 +194,11 @@ export const deleteWord = async (req: Request, res: Response) => {
 };
 
 export const startTraining = async (req: Request, res: Response) => {
-  const settings = await SettingsModel.findFirst();
+  const loggedUser = req.loggedUser!;
+
+  const settings = await SettingsModel.findUnique({
+    where: { user_id: loggedUser.id },
+  });
   if (!settings) {
     return res.status(500).send({ message: "No settings" });
   }
@@ -171,6 +206,7 @@ export const startTraining = async (req: Request, res: Response) => {
   await SettingsModel.update({
     where: {
       id: settings.id,
+      user_id: loggedUser.id,
     },
     data: {
       training_try_num: 0,
@@ -178,6 +214,9 @@ export const startTraining = async (req: Request, res: Response) => {
   });
 
   await WordModel.updateMany({
+    where: {
+      user_id: loggedUser.id,
+    },
     data: {
       last_training_try: -1,
     },
@@ -187,6 +226,8 @@ export const startTraining = async (req: Request, res: Response) => {
 };
 
 export const pickNextWordTraining = async (req: Request, res: Response) => {
+  const loggedUser = req.loggedUser!;
+
   const settings = await SettingsModel.findFirst();
   if (!settings) {
     return res.status(500).send({ message: "No settings" });
@@ -195,6 +236,7 @@ export const pickNextWordTraining = async (req: Request, res: Response) => {
   await SettingsModel.update({
     where: {
       id: settings.id,
+      user_id: loggedUser.id,
     },
     data: {
       training_try_num: settings.training_try_num + 1,
@@ -202,7 +244,8 @@ export const pickNextWordTraining = async (req: Request, res: Response) => {
   });
 
   const pickedWord = await WordModel.pickRandomWordTraining(
-    settings.training_try_num
+    settings.training_try_num,
+    loggedUser.id
   );
   if (!pickedWord) {
     return res.status(500).send({ message: "Could not pick word" });
@@ -215,6 +258,7 @@ export const pickNextWordTraining = async (req: Request, res: Response) => {
     },
     where: {
       id: pickedWord.id,
+      user_id: loggedUser.id,
     },
   });
 
