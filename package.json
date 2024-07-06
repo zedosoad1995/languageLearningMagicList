@@ -4,7 +4,8 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "dev": "dotenv -e .env -- nodemon --files src/index.ts"
+    "dev": "dotenv -e .env -- nodemon --files src/index.ts",
+    "build": "tsc && tsc-alias"
   },
   "author": "",
   "license": "ISC",
@@ -23,6 +24,7 @@
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "express-async-errors": "^3.1.1",
+    "tsc-alias": "^1.8.10",
     "zod": "^3.23.8"
   }
 }
