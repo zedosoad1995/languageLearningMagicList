@@ -7,7 +7,7 @@ export const checkAuth = async (
   res: Response,
   next: NextFunction
 ) => {
-  const jwtoken = req.cookies["session"]?.jwt;
+  const jwtoken = req.cookies?.["session"]?.jwt;
 
   if (!jwtoken) {
     return res.status(401).send({ message: "No JWT Token" });
