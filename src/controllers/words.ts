@@ -228,7 +228,9 @@ export const startTraining = async (req: Request, res: Response) => {
 export const pickNextWordTraining = async (req: Request, res: Response) => {
   const loggedUser = req.loggedUser!;
 
-  const settings = await SettingsModel.findFirst();
+  const settings = await SettingsModel.findUnique({
+    where: { user_id: loggedUser.id },
+  });
   if (!settings) {
     return res.status(500).send({ message: "No settings" });
   }
