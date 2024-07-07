@@ -117,7 +117,14 @@ export const pickDailyWords = async (req: Request, res: Response) => {
     ({ last_seen }) => !last_seen || daysDiff(last_seen, now) > 0
   );
 
-  res.status(200).send({ seenWords, unseenWords });
+  const totalWordsToLearn = await WordModel.count({
+    where: {
+      user_id: loggedUser.id,
+      is_learned: false,
+    },
+  });
+
+  res.status(200).send({ seenWords, unseenWords, totalWordsToLearn });
 };
 
 export const createWord = async (req: Request, res: Response) => {
@@ -222,7 +229,13 @@ export const startTraining = async (req: Request, res: Response) => {
     },
   });
 
-  res.sendStatus(204);
+  const totalWordsToLearn = await WordModel.count({
+    where: {
+      user_id: loggedUser.id,
+    },
+  });
+
+  res.status(200).send({ totalWordsToLearn });
 };
 
 export const pickNextWordTraining = async (req: Request, res: Response) => {
