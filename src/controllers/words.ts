@@ -134,8 +134,8 @@ export const createWord = async (req: Request, res: Response) => {
 
   const newWord = await WordModel.create({
     data: {
-      original,
-      translation,
+      original: (original as string).trim(),
+      translation: (translation as string).trim(),
       knowledge,
       relevance,
       user: {
@@ -163,9 +163,17 @@ export const editWord = async (req: Request, res: Response) => {
     return res.status(404).send({ message: "Word not found" });
   }
 
-  const data = body;
+  const data = { ...body };
   if (isSeen) {
     data.last_seen = new Date();
+  }
+
+  if (typeof data.original === "string") {
+    data.original = (data.original as string).trim();
+  }
+
+  if (typeof data.translation === "string") {
+    data.translation = (data.translation as string).trim();
   }
 
   const updatedWord = await WordModel.update({
