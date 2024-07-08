@@ -5,12 +5,20 @@ import { WordModel } from "@/models/word";
 import { Prisma } from "@prisma/client";
 import { Request, Response } from "express";
 
-type SortableFields = "knowledge" | "relevance" | "original" | "translation";
+type AllowedSortingFields = keyof Prisma.WordOrderByWithRelationInput;
+
+const allowedSortingFields: AllowedSortingFields[] = [
+  "knowledge",
+  "relevance",
+  "original",
+  "translation",
+  "created_at",
+];
 
 export const getWords = async (req: Request, res: Response) => {
   const loggedUser = req.loggedUser!;
 
-  const { sortBy, order } = req.query;
+  const { sortBy, order, search } = req.query;
   const tranformedOrder = order === "desc" ? "desc" : "asc";
   const isLearned = parseBoolean(req.query.isLearned as string | undefined);
 
@@ -18,16 +26,24 @@ export const getWords = async (req: Request, res: Response) => {
 
   if (
     typeof sortBy === "string" &&
-    ["knowledge", "relevance", "original", "translation"].includes(sortBy)
+    allowedSortingFields.includes(sortBy as AllowedSortingFields)
   ) {
-    orderQuery[sortBy as SortableFields] = tranformedOrder;
+    orderQuery[sortBy as AllowedSortingFields] = tranformedOrder;
   } else {
     orderQuery.original = tranformedOrder;
   }
 
-  const whereQuery: Prisma.WordWhereInput = { user_id: loggedUser.id };
+  const whereQuery: Prisma.WordWhereInput = {
+    user_id: loggedUser.id,
+    original: { contains: "", mode: "insensitive" },
+  };
   if (typeof isLearned === "boolean") {
     whereQuery.is_learned = isLearned;
+  }
+
+  if (typeof search === "string" && search.length) {
+    whereQuery.original = { contains: search, mode: "insensitive" };
+    whereQuery.translation = { contains: search, mode: "insensitive" };
   }
 
   const words = await WordModel.findMany({
