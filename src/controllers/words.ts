@@ -26,7 +26,7 @@ export const getWords = async (req: Request, res: Response) => {
 
   if (
     typeof sortBy === "string" &&
-    allowedSortingFields.includes(sortBy as AllowedSortingFields)
+    (allowedSortingFields as string[]).includes(sortBy)
   ) {
     orderQuery[sortBy as AllowedSortingFields] = tranformedOrder;
   } else {
@@ -35,15 +35,16 @@ export const getWords = async (req: Request, res: Response) => {
 
   const whereQuery: Prisma.WordWhereInput = {
     user_id: loggedUser.id,
-    original: { contains: "", mode: "insensitive" },
   };
   if (typeof isLearned === "boolean") {
     whereQuery.is_learned = isLearned;
   }
 
   if (typeof search === "string" && search.length) {
-    whereQuery.original = { contains: search, mode: "insensitive" };
-    whereQuery.translation = { contains: search, mode: "insensitive" };
+    whereQuery.OR = [
+      { original: { contains: search, mode: "insensitive" } },
+      { translation: { contains: search, mode: "insensitive" } },
+    ];
   }
 
   const words = await WordModel.findMany({
